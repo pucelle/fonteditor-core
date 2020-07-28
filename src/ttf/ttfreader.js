@@ -108,6 +108,12 @@ export default class TTFReader {
             if (subsetMap && !subsetMap[i]) {
                 return;
             }
+
+            // 修正当 cmap 表出现冗余时的报错问题.
+            if (!glyf[i]) {
+                return;
+            }
+
             if (!glyf[i].unicode) {
                 glyf[i].unicode = [];
             }

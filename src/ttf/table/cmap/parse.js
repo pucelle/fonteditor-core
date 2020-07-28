@@ -185,6 +185,9 @@ function readSubTable(reader, ttf, subTable, cmapOffset) {
             let defaultUVSOffset = reader.readUint32();
             let nonDefaultUVSOffset = reader.readUint32();
 
+            // 修正 seek 访问后指针未复位而报错的问题.
+            let offset = reader.offset;
+
             if (defaultUVSOffset) {
                 let numUnicodeValueRanges = reader.readUint32(startOffset + defaultUVSOffset);
                 for (let j = 0; j < numUnicodeValueRanges; j++) {
@@ -209,6 +212,8 @@ function readSubTable(reader, ttf, subTable, cmapOffset) {
                     });
                 }
             }
+
+            reader.offset = offset;
         }
         format14.groups = groups;
     }
