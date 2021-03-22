@@ -83,7 +83,7 @@ export default class Font {
      * @param {boolean} options.compound2simple 复合字形转简单字形
      *
      * woff 读取配置
-     * @param {Object} options.inflate 解压相关函数
+     * @param {Function} options.inflate 解压相关函数
      *
      * svg 读取配置
      * @param {boolean} options.combinePath 是否合并成单个字形，仅限于普通svg导入
@@ -140,7 +140,7 @@ export default class Font {
      * @param {Object} options.metadata 字体相关的信息
      *
      * woff 字体参数
-     * @param {Object} options.deflate 压缩相关函数
+     * @param {Function} options.deflate 压缩相关函数
      * @return {Buffer|ArrayBuffer|string}
      */
     write(options = {}) {
@@ -192,7 +192,7 @@ export default class Font {
      * @see write
      *
      * @param {ArrayBuffer} buffer  如果提供了buffer数据则使用 buffer数据, 否则转换现有的 font
-     * @return {Buffer|ArrayBuffer|string}
+     * @return {string}
      */
     toBase64(options, buffer) {
         if (!options.type) {
@@ -265,7 +265,7 @@ export default class Font {
      * @return {Font}
      */
     optimize(out) {
-        let result = optimizettf(this.data);
+        const result = optimizettf(this.data);
         if (out) {
             out.result = result;
         }
@@ -278,7 +278,7 @@ export default class Font {
      * @return {this}
      */
     compound2simple() {
-        let ttf = new TTF(this.data);
+        const ttf = new TTF(this.data);
         ttf.compound2simple();
         this.data = ttf.get();
         return this;
@@ -290,7 +290,7 @@ export default class Font {
      * @return {this}
      */
     sort() {
-        let ttf = new TTF(this.data);
+        const ttf = new TTF(this.data);
         ttf.sortGlyf();
         this.data = ttf.get();
         return this;
@@ -310,8 +310,8 @@ export default class Font {
      * @return {Array}  glyf字形列表
      */
     find(condition) {
-        let ttf = new TTF(this.data);
-        let indexList = ttf.findGlyf(condition);
+        const ttf = new TTF(this.data);
+        const indexList = ttf.findGlyf(condition);
         return indexList.length ? ttf.getGlyf(indexList) : indexList;
     }
 
@@ -327,7 +327,7 @@ export default class Font {
      * @return {Font}
      */
     merge(font, options) {
-        let ttf = new TTF(this.data);
+        const ttf = new TTF(this.data);
         ttf.mergeGlyf(font.get(), options);
         this.data = ttf.get();
         return this;

@@ -41,15 +41,15 @@ const GLYPH_TPL = '<glyph glyph-name="${name}" unicode="${unicode}" d="${d}" />'
  *
  * @param {ttfObject} ttf ttfObject对象
  * @param {Object} options 选项
- * @param {Object} options.metadata 字体相关的信息
+ * @param {string} options.metadata 字体相关的信息
  * @return {string} svg字符串
  */
 function ttfobject2svg(ttf, options) {
 
-    let OS2 = ttf['OS/2'];
+    const OS2 = ttf['OS/2'];
 
     // 用来填充xml的数据
-    let xmlObject = {
+    const xmlObject = {
         id: ttf.name.uniqueSubFamily || SVG_FONT_ID,
         metadata: string.encodeHTML(options.metadata || ''),
         advanceWidth: ttf.hhea.advanceWidthMax,
@@ -80,11 +80,11 @@ function ttfobject2svg(ttf, options) {
     // glyf 信息
     let glyphList = '';
     for (let i = 1, l = ttf.glyf.length; i < l; i++) {
-        let glyf = ttf.glyf[i];
+        const glyf = ttf.glyf[i];
 
         // 筛选简单字形，并且有轮廓，有编码
         if (!glyf.compound && glyf.contours && glyf.unicode && glyf.unicode.length) {
-            let glyfObject = {
+            const glyfObject = {
                 name: utilString.escape(glyf.name),
                 unicode: unicode2xml(glyf.unicode),
                 d: contours2svg(glyf.contours)
@@ -111,8 +111,8 @@ export default function ttf2svg(ttfBuffer, options = {}) {
 
     // 读取ttf二进制流
     if (ttfBuffer instanceof ArrayBuffer) {
-        let reader = new TTFReader();
-        let ttfObject = reader.read(ttfBuffer);
+        const reader = new TTFReader();
+        const ttfObject = reader.read(ttfBuffer);
         reader.dispose();
 
         return ttfobject2svg(ttfObject, options);

@@ -39,9 +39,9 @@ export default class TTFReader {
      */
     readBuffer(buffer) {
 
-        let reader = new Reader(buffer, 0, buffer.byteLength, false);
+        const reader = new Reader(buffer, 0, buffer.byteLength, false);
 
-        let ttf = {};
+        const ttf = {};
 
         // version
         ttf.version = reader.readFixed(0);
@@ -57,14 +57,14 @@ export default class TTFReader {
             error.raise(10101);
         }
 
-        // searchRenge
-        ttf.searchRenge = reader.readUint16();
+        // searchRange
+        ttf.searchRange = reader.readUint16();
 
         // entrySelector
         ttf.entrySelector = reader.readUint16();
 
-        // rengeShift
-        ttf.rengeShift = reader.readUint16();
+        // rangeShift
+        ttf.rangeShift = reader.readUint16();
 
         ttf.tables = new Directory(reader.offset).read(reader, ttf);
 
@@ -75,10 +75,10 @@ export default class TTFReader {
         ttf.readOptions = this.options;
 
         // 读取支持的表数据
-        Object.keys(supportTables).forEach(function (tableName) {
+        Object.keys(supportTables).forEach((tableName) => {
 
             if (ttf.tables[tableName]) {
-                let offset = ttf.tables[tableName].offset;
+                const offset = ttf.tables[tableName].offset;
                 ttf[tableName] = new supportTables[tableName](offset).read(reader, ttf);
             }
         });
@@ -98,13 +98,13 @@ export default class TTFReader {
      * @param {Object} ttf ttf对象
      */
     resolveGlyf(ttf) {
-        let codes = ttf.cmap;
-        let glyf = ttf.glyf;
-        let subsetMap = ttf.readOptions.subset ? ttf.subsetMap : null; // 当前ttf的子集列表
+        const codes = ttf.cmap;
+        const glyf = ttf.glyf;
+        const subsetMap = ttf.readOptions.subset ? ttf.subsetMap : null; // 当前ttf的子集列表
 
         // unicode
-        Object.keys(codes).forEach(function (c) {
-            let i = codes[c];
+        Object.keys(codes).forEach((c) => {
+            const i = codes[c];
             if (subsetMap && !subsetMap[i]) {
                 return;
             }
@@ -121,7 +121,7 @@ export default class TTFReader {
         });
 
         // advanceWidth
-        ttf.hmtx.forEach(function (item, i) {
+        ttf.hmtx.forEach((item, i) => {
             if (subsetMap && !subsetMap[i]) {
                 return;
             }
@@ -131,9 +131,9 @@ export default class TTFReader {
 
         // format = 2 的post表会携带glyf name信息
         if (ttf.post && 2 === ttf.post.format) {
-            let nameIndex = ttf.post.nameIndex;
-            let names = ttf.post.names;
-            nameIndex.forEach(function (nameIndex, i) {
+            const nameIndex = ttf.post.nameIndex;
+            const names = ttf.post.names;
+            nameIndex.forEach((nameIndex, i) => {
                 if (subsetMap && !subsetMap[i]) {
                     return;
                 }
@@ -149,8 +149,8 @@ export default class TTFReader {
         // 设置了subsetMap之后需要选取subset中的字形
         // 并且对复合字形转换成简单字形
         if (subsetMap) {
-            let subGlyf = [];
-            Object.keys(subsetMap).forEach(function (i) {
+            const subGlyf = [];
+            Object.keys(subsetMap).forEach((i) => {
                 i = +i;
                 if (glyf[i].compound) {
                     compound2simpleglyf(i, ttf, true);
@@ -188,14 +188,14 @@ export default class TTFReader {
             delete ttf.prep;
             delete ttf.GPOS;
             delete ttf.kern;
-            ttf.glyf.forEach(function (glyf) {
+            ttf.glyf.forEach((glyf) => {
                 delete glyf.instructions;
             });
         }
 
         // 复合字形转简单字形
         if (this.options.compound2simple && ttf.maxp.maxComponentElements) {
-            ttf.glyf.forEach(function (glyf, index) {
+            ttf.glyf.forEach((glyf, index) => {
                 if (glyf.compound) {
                     compound2simpleglyf(index, ttf, true);
                 }
