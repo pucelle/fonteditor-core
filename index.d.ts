@@ -1,423 +1,813 @@
-/**
- * @file index.d.ts
- * @author mengke01(kekee000@gmail.com)
- */
+declare module 'fonteditor-core' {
 
-export namespace TTF {
-
-    type CodePoint = number;
-
-    type Point = {
-        x: number;
-        y: number;
-        onCurve: boolean;
-    };
-
-    type Contour = Point[];
-
-    type Glyph = {
-        contours: Contour[];
-        xMin: number;
-        yMin: number;
-        xMax: number;
-        yMax: number;
-        advanceWidth: number;
-        leftSideBearing: number;
-        name: string;
-        unicode: CodePoint[];
-    };
-
-    type Head = {
-        [k: string]: number;
-        version: number;
-        fontRevision: number;
-        checkSumAdjustment: number;
-        magickNumber: number;
-        flags: number;
-        unitsPerE: number;
-        created: number;
-        modified: number;
-        xMin: number;
-        yMin: number;
-        xMax: number;
-        yMax: number;
-        macStyle: number;
-        lowestRecPPEM: number;
-        fontDirectionHint: number;
-        indexToLocFormat: number;
-        glyphDataFormat: number;
-    };
-
-    type Hhea = {
-        version: number;
-        ascent: number;
-        descent: number;
-        lineGap: number;
-        advanceWidthMax: number;
-        minLeftSideBearing: number;
-        minRightSideBearing: number;
-        xMaxExtent: number;
-        caretSlopeRise: number;
-        caretSlopeRun: number;
-        caretOffset: number;
-        reserved0: number;
-        reserved1: number;
-        reserved2: number;
-        reserved3: number;
-        metricDataFormat: number;
-        numOfLongHorMetrics: number;
-    };
-
-    type Post = {
-        italicAngle: number;
-        postoints: number;
-        underlinePosition: number;
-        underlineThickness: number;
-        isFixedPitch: number;
-        minMemType42: number;
-        maxMemType42: number;
-        minMemType1: number;
-        maxMemType1: number;
-        format: number;
-    };
-
-    type Maxp = {
-        version: number;
-        numGlyphs: number;
-        maxPoints: number;
-        maxContours: number;
-        maxCompositePoints: number;
-        maxCompositeContours: number;
-        maxZones: number;
-        maxTwilightPoints: number;
-        maxStorage: number;
-        maxFunctionDefs: number;
-        maxStackElements: number;
-        maxSizeOfInstructions: number;
-        maxComponentElements: number;
-        maxComponentDepth: number;
-    };
-
-    type OS2 = {
-        version: number;
-        xAvgCharWidth: number;
-        usWeightClass: number;
-        usWidthClass: number;
-        fsType: number;
-        ySubscriptXSize: number;
-        ySubscriptYSize: number;
-        ySubscriptXOffset: number;
-        ySubscriptYOffset: number;
-        ySuperscriptXSize: number;
-        ySuperscriptYSize: number;
-        ySuperscriptXOffset: number;
-        ySuperscriptYOffset: number;
-        yStrikeoutSize: number;
-        yStrikeoutPosition: number;
-        sFamilyClass: number;
-        bFamilyType: number;
-        bSerifStyle: number;
-        bWeight: number;
-        bProportion: number;
-        bContrast: number;
-        bStrokeVariation: number;
-        bArmStyle: number;
-        bLetterform: number;
-        bMidline: number;
-        bXHeight: number;
-        ulUnicodeRange1: number;
-        ulUnicodeRange2: number;
-        ulUnicodeRange3: number;
-        ulUnicodeRange4: number;
-        achVendID: string;
-        fsSelection: number;
-        usFirstCharIndex: number;
-        usLastCharIndex: number;
-        sTypoAscender: number;
-        sTypoDescender: number;
-        sTypoLineGap: number;
-        usWinAscent: number;
-        usWinDescent: number;
-        ulCodePageRange1: number;
-        ulCodePageRange2: number;
-        sxHeight: number;
-        sCapHeight: number;
-        usDefaultChar: number;
-        usBreakChar: number;
-        usMaxContext: number;
-    };
-
-    type Name = {
-        [k: string]: string;
-        fontFamily: string;
-        fontSubFamily: string;
-        uniqueSubFamily: string;
-        version: string;
-    };
-
-    type TTFObject = {
-        version: number;
-        numTables: number;
-        searchRange: number;
-        entrySelector: number;
-        rangeShift: number;
-        head: Head;
-        glyf: Glyph[];
-        cmap: Record<string, number>;
-        name: Name;
-        hhea: Hhea;
-        post: Post;
-        maxp: Maxp;
-        'OS/2': OS2;
-    };
-}
-
-export namespace FontEditor {
-
-    type FontType = 'ttf' | 'otf' | 'eot' | 'woff' | 'woff2' | 'svg';
-
-    type FontInput = ArrayBuffer | Buffer | string;
-    type FontOutput = FontInput;
-
-    type UInt8 = number;
-
-    interface FontReadOptions {
-
-        /**
-         * font type for read
-         */
-        type: FontType;
-
-        /**
-         * subset font file to specified unicode code points;
-         */
-        subset?: TTF.CodePoint[];
-
-        /**
-         * keep hinting or not, default false
-         */
-        hinting?: boolean;
-
-        /**
-         * tranfrom compound glyph to simple, default true
-         */
-        compound2simple?: boolean;
-
-        /**
-         * inflate function for woff
-         *
-         * @see pako.inflate https://github.com/nodeca/pako
-         */
-        inflate?: (deflatedData: UInt8[]) => UInt8[];
-
-        /**
-         * combine svg paths to one glyph in one svg file. default true
-         */
-        combinePath?: boolean;
+    /** 读取配置. */
+    export interface FontReadOptions {
+        
+        /** 字体类型. */
+        type?: 'ttf' | 'woff' | 'woff2' | 'eot' | 'svg'
+    
+        /** 是否保留 hinting 信息, 以使得文字更容易和像素对齐, 用于 ttf, woff , eot. */
+        hinting?: boolean
+    
+        /**  复合字形转简单字形, 用于 ttf, woff, eot. */
+        compound2simple?: boolean
+    
+        /** 解压相关函数, 用于 woff. */
+        inflate?: boolean
+    
+        /** 是否合并成单个字形，仅限于普通 svg 导入. */
+        combinePath?: boolean
+    
+        /** 只读取部分字符. */
+        subset?: number[]
     }
-
-    interface FontWriteOptions {
-
-        /**
-         * font type for write
-         */
-        type: FontType;
-
-        /**
-         * use Buffer when in Node enviroment, in browser will use ArrayBuffer.
-         * default true
-         */
-        toBuffer?: boolean;
-
-        /**
-         * keep hinting or not, default false
-         */
-        hinting?: boolean;
-
-        /**
-         * svg output meta data
-         */
-        metadata?: string;
-
-        /**
-         * deflate function for woff
-         *
-         * @see pako.deflate https://github.com/nodeca/pako
-         */
-        deflate?: (rawData: UInt8[]) => UInt8[];
+    
+    /** 写入配置. */
+    export interface FontWriteOptions {
+        
+        /** 字体类型 */
+        type: 'ttf' | 'woff' | 'woff2' | 'eot' | 'svg'
+    
+        /**  nodejs 环境中返回 Buffer 对象, 默认 true. */
+        toBuffer?: boolean
+    
+        /** 是否保留 hinting 信息, 用于 ttf, woff, eot. */
+        hinting?: boolean
+    
+        /** 字体相关的元数据信息, 用于 svg, woff. */
+        metadata?: {[name: string]: string}
+    
+        /** 压缩相关函数, 用于 woff. 默认为 false. */
+        deflate?: boolean
+    
+        /** 用于覆写字体的对应属性. */
+        support?: {
+            head: TTFObject['head']
+            hhea: TTFObject['hhea']
+        }
     }
-
-    type FindCondition = {
-        unicode?: TTF.CodePoint[];
-        name?: string;
-        filter?: (glyph: TTF.Glyph) => boolean;
-    };
-
-    type MergeOptions = ({
-
-        /**
-         * scale glyphs to fit fonts. default true
-         */
-        scale: boolean;
-    }) | ({
-
-        /**
-         * auto adjuct glyphs to the first font em box. default true
-         */
-        adjustGlyf: boolean;
-    });
-
-    class Font {
-
-        /**
-         * create font object with font data
-         *
-         * @param buffer font data, support format: ArrayBuffer, Buffer, string
-         * @param options font read options
-         */
-        static create(buffer: FontInput, options: FontReadOptions): Font;
-
-        /**
-         * convert buffer data to base64 string
-         *
-         * @param buffer buffer data
-         */
-        static toBase64(buffer: FontInput): string;
-
-        /**
-         * create empty ttf object
-         */
-        readEmpty(): Font;
-
-        /**
-         * read font data
-         *
-         * @param buffer font data, support format: ArrayBuffer, Buffer, string
-         * @param options font read options
-         */
-        read(buffer: FontInput, options: FontReadOptions): Font;
-
-        /**
-         * write font data
-         * @param options write options
-         */
-        write(options: FontWriteOptions): FontOutput;
-
-        write(options: {type: 'svg'} & FontWriteOptions): string;
-
-        write(options: {toBuffer: true} & FontWriteOptions): Buffer;
-
-        toBase64(options: FontWriteOptions, buffer: FontInput): string;
-
-        /**
-         * use ttf object data
-         * @param data ttf object
-         */
-        set(data: TTF.TTFObject): Font;
-
-        /**
-         * get ttf object
-         */
-        get(): TTF.TTFObject;
-
-        /**
-         * optimize glyphs
-         * @param outRef optimize results
-         */
-        optimize(outRef: {result: any}): Font;
-
-        /**
-         * tranfrom compound glyph to simple, default true
-         */
-        compound2simple(): Font;
-
-        /**
-         * sort glyphs with unicode order
-         */
-        sort(): Font;
-
-        /**
-         * find glyphs with conditions
-         *
-         * @param condition find conditions
-         */
-        find(condition: FindCondition): TTF.Glyph[];
-
-        /**
-         * merge two font object
-         *
-         * @param font another font object
-         * @param options merge options
-         */
-        merge(font: Font, options: MergeOptions): Font;
+    
+    /** TTF 数据对象. */
+    export interface TTFObject {
+        version: 1
+        numTables: 12
+        searchRenge: 128
+        entrySelector: 3
+        rengeShift: 64
+        head: {
+            version: 1
+            fontRevision: 1.004
+            checkSumAdjustment: 251623041
+            magickNumber: 1594834165
+            flags: 11
+            unitsPerEm: 1000
+            created: string
+            modified: string
+            xMin: -536
+            yMin: -350
+            xMax: 1788
+            yMax: 900
+            macStyle: 0
+            lowestRecPPEM: 8
+            fontDirectionHint: 2
+            indexToLocFormat: 0
+            glyphDataFormat: 0
+        }
+        maxp: {
+            version: 1
+            numGlyphs: 252
+            maxPoints: 146
+            maxContours: 10
+            maxCompositePoints: 0
+            maxCompositeContours: 0
+            maxZones: 2
+            maxTwilightPoints: 0
+            maxStorage: 1
+            maxFunctionDefs: 1
+            maxInstructionDefs: 0
+            maxStackElements: 64
+            maxSizeOfInstructions: 7
+            maxComponentElements: 0
+            maxComponentDepth: 0
+        }
+        cmap: {[unicodeNum: number]: number}
+        glyf: Glyf[]
+        name: {
+            copyright: string
+            fontFamily: string
+            fontSubFamily: string
+            uniqueSubFamily: string
+            fullName: string
+            version: string
+            postScriptName: string
+            tradeMark: string
+            manufacturer: string
+            designer: string
+            urlOfFontDesigner: string
+            licence: string
+            urlOfLicence: string
+            preferredFamily: string
+            preferredSubFamily: string
+        }
+        hhea: {
+            version: 1
+            ascent: 900
+            descent: -350
+            lineGap: 0
+            advanceWidthMax: 1788
+            minLeftSideBearing: -535
+            minRightSideBearing: -480
+            xMaxExtent: 1788
+            caretSlopeRise: 1
+            caretSlopeRun: 0
+            caretOffset: 0
+            reserved0: 0
+            reserved1: 0
+            reserved2: 0
+            reserved3: 0
+            metricDataFormat: 0
+            numOfLongHorMetrics: 252
+        }
+        post: {
+            format: 2
+            italicAngle: 0
+            underlinePosition: -65
+            underlineThickness: 10
+            isFixedPitch: 0
+            minMemType42: 0
+            maxMemType42: 0
+            minMemType1: 0
+            maxMemType1: 252
+        }
+        'OS/2': {
+            ulCodePageRange1: 1
+            ulCodePageRange2: 0
+            sxHeight: 237
+            sCapHeight: 636
+            usDefaultChar: 0
+            usBreakChar: 32
+            usMaxContext: 1
+            version: 4
+            xAvgCharWidth: 513
+            usWeightClass: 400
+            usWidthClass: 5
+            fsType: 0
+            ySubscriptXSize: 700
+            ySubscriptYSize: 650
+            ySubscriptXOffset: 0
+            ySubscriptYOffset: 140
+            ySuperscriptXSize: 700
+            ySuperscriptYSize: 650
+            ySuperscriptXOffset: 0
+            ySuperscriptYOffset: 477
+            yStrikeoutSize: 50
+            yStrikeoutPosition: 250
+            sFamilyClass: 0
+            bFamilyType: 2
+            bSerifStyle: 0
+            bWeight: 5
+            bProportion: 7
+            bContrast: 6
+            bStrokeVariation: 0
+            bArmStyle: 0
+            bLetterform: 2
+            bMidline: 0
+            bXHeight: 3
+            ulUnicodeRange1: 2147483695
+            ulUnicodeRange2: 268435456
+            ulUnicodeRange3: 0
+            ulUnicodeRange4: 0
+            achVendID: string
+            fsSelection: 64
+            usFirstCharIndex: 32
+            usLastCharIndex: 64258
+            sTypoAscender: 900
+            sTypoDescender: -350
+            sTypoLineGap: 0
+            usWinAscent: 900
+            usWinDescent: 350
+        }
+        prep: number[]
+        gasp: number[]
     }
-
-    interface Woff2 {
-
-        /**
-         * is woff2 wasm loaded
-         */
-        isInited: boolean;
-
-        /**
-         * init woff2 wasm module
-         *
-         * @param wasmUrl wasm file url or wasm file buffer
-         */
-        init(wasmUrl: string | ArrayBuffer): Promise<Woff2>;
-
-        /**
-         * convert ttf buffer to woff buffer
-         *
-         * @param ttfBuffer ttf data buffer
-         */
-        encode(ttfBuffer: ArrayBuffer | Buffer | UInt8[]): Uint8Array;
-
-        /**
-         * convert woff2 buffer to ttf buffer
-         *
-         * @param woff2Buffer woff2 data buffer
-         */
-        decode(woff2Buffer: ArrayBuffer | Buffer | UInt8[]): Uint8Array;
+    
+    /** 查询条件. */
+    export interface FontFindCondition {
+    
+        /** unicode编码列表或者单个unicode编码 */
+        unicode?: number | number[] | string[]
+    
+        /** glyf名字，例如`uniE001`, `uniE` */
+        name?: string
+    
+        /**  自定义过滤器. */
+        filter?: (glyph: Glyf) => boolean
     }
-
-    interface Core {
-        Font: typeof Font;
-        woff2: Woff2;
-        TTF: any;
-        TTFReader: any;
-        TTFWriter: any;
-        Reader: any;
-        Writer: any;
-        OTFReader: any;
-        otf2ttfobject: (otfBuffer: any, options: any) => any;
-        ttf2eot: (ttfBuffer: ArrayBuffer, options?: any) => ArrayBuffer;
-        eot2ttf: (eotBuffer: ArrayBuffer, options?: any) => ArrayBuffer;
-        ttf2woff: (ttfBuffer: ArrayBuffer, options?: {
-            metadata: any;
-            deflate?: (rawData: UInt8[]) => UInt8[];
-        }) => ArrayBuffer;
-        woff2ttf: (woffBuffer: ArrayBuffer, options?: {
-            inflate?: (deflatedData: UInt8[]) => UInt8[];
-        }) => ArrayBuffer;
-        ttf2svg: (ttfBuffer: ArrayBuffer | TTF.TTFObject, options?: {
-            metadata: string;
-        }) => string;
-        svg2ttfobject: (svg: string, options?: any) => TTF.TTFObject;
-        ttf2base64: (arrayBuffer: ArrayBuffer) => string;
-        ttf2icon: (ttfBuffer: ArrayBuffer | TTF.TTFObject, options?: {
-            metadata: any;
-        }) => any;
-        ttftowoff2: (ttfBuffer: ArrayBuffer, options?: any) => Uint8Array;
-        woff2tottf: (woff2Buffer: ArrayBuffer, options?: any) => Uint8Array;
+    
+    /** 字形对象. */
+    export interface Glyf {
+    
+        /** 字符名称. */
+        name: string
+    
+        /** 坐标范围的左侧. */
+        xMin: number
+    
+        /** 坐标范围的上侧. */
+        yMin: number
+    
+        /** 坐标范围的右侧. */
+        xMax: number
+    
+        /** 坐标范围的下侧. */
+        yMax: number
+    
+        /** 字形曲线的点集.. */
+        contours: GlyfPoint[][]
+    
+        /** 指令集. */
+        instructions?: number[]
+    
+        /** Unicode 编码. */
+        unicode: number[]
+    
+        /** 布局时的宽度. */
+        advanceWidth: number
+    
+        /** 布局时的左侧移动宽度. */
+        leftSideBearing: number
     }
-
+    
+    /** 字形顶点位置. */
+    export interface GlyfPoint {
+        x: number
+        y: number
+        onCurve?: boolean
+    }
+    
+    /** 合并字形选项. */
+    export interface FontMergeOptions {
+    
+        /** 是否自动缩放 */
+        scale?: boolean
+    
+        /** 是否调整字形以适应边界, 和 options.scale 参数互斥. */
+        adjustGlyf?: boolean
+    }
+    
+    /** 字形位置设置. */
+    export interface GlyfPosSettings {
+    
+        /** 左边距 */
+        leftSideBearing?: number
+    
+        /** 右边距 */
+        rightSideBearing?: number
+    
+        /** 垂直对齐 */
+        verticalAlign?: number
+    }
+    
+    /** 字形属性设置. */
+    export interface GlyfSettings {
+    
+        /** 字形反转操作 */
+        reverse?: boolean
+    
+        /** 字形镜像操作 */
+        mirror?: boolean
+    
+        /** 字形缩放 */
+        scale?: number
+    
+        /** 是否调整字形到 em 框 */
+        ajdustToEmBox?: boolean
+    
+        /** 调整到 em 框的留白 */
+        ajdustToEmPadding?: number
+    }
+    
+    /** 文字度量信息. */
+    export interface FontMetrics {
+        ascent: number
+        descent: number
+        sTypoAscender: number
+        sTypoDescender: number
+        usWinAscent: number
+        usWinDescent: number
+        sxHeight: number
+        sCapHeight: number
+    }
+    
+    
+    export namespace Font {
+    
+        /**
+         * 读取字体数据
+         *
+         * @param {ArrayBuffer|Buffer|string} buffer 字体数据
+         * @param {Object} options  读取参数
+         * @return {Font}
+         */
+        export function create(buffer: ArrayBuffer | Buffer | string | TTFObject, options: FontReadOptions): Font
+    
+        /**
+         * base64序列化buffer 数据
+         *
+         * @param {ArrayBuffer|Buffer|string} buffer 字体数据
+         * @return {string}
+         */
+        export function toBase64(buffer: ArrayBuffer | Buffer | string): string
+    }
+    
+    export class Font {
+    
+        /** 字体类型 */
+        type: 'ttf' | 'woff' | 'woff2' | 'eot' | 'svg'
+    
+        /**
+         * 字体对象构造函数
+         *
+         * @param {ArrayBuffer|Buffer|string} buffer  字体数据
+         * @param {Object} options  读取参数
+         */
+        constructor(buffer: ArrayBuffer | Buffer | string | TTFObject, options: FontReadOptions)
+    
+        /**
+         * 读取字体数据
+         *
+         * @param {ArrayBuffer|Buffer|string} buffer  字体数据
+         * @param {Object} options  读取参数
+         * @param {string} options.type 字体类型
+         *
+         * ttf, woff , eot 读取配置
+         * @param {boolean} options.hinting 保留hinting信息
+         * @param {boolean} options.compound2simple 复合字形转简单字形
+         *
+         * woff 读取配置
+         * @param {Object} options.inflate 解压相关函数
+         *
+         * svg 读取配置
+         * @param {boolean} options.combinePath 是否合并成单个字形，仅限于普通svg导入
+         * @return {this}
+         */
+        read(buffer: ArrayBuffer | Buffer | string, options: FontReadOptions): this
+    
+        /**
+         * 写入字体数据
+         *
+         * @param {Object} options  写入参数
+         * @param {string} options.type   字体类型, 默认 ttf
+         * @param {boolean} options.toBuffer nodejs 环境中返回 Buffer 对象, 默认 true
+         *
+         * ttf 字体参数
+         * @param {boolean} options.hinting 保留hinting信息
+         *
+         * svg,woff 字体参数
+         * @param {Object} options.metadata 字体相关的信息
+         *
+         * woff 字体参数
+         * @param {Object} options.deflate 压缩相关函数
+         * @return {Buffer|ArrayBuffer|string}
+         */
+        write(options?: FontWriteOptions): Buffer | ArrayBuffer | string
+    
+        /**
+         * base64序列化buffer 数据
+         *
+         * @param {ArrayBuffer|Buffer|string} buffer 字体数据
+         * @return {string}
+         */
+        toBase64(options?: FontWriteOptions): string
+    
+        /**
+         * 获取 font 数据
+         *
+         * @return {Object} ttfObject 对象
+         */
+        get(): TTFObject
+    
+        /**
+         * 设置 font 对象
+         *
+         * @param {Object} data font的ttfObject对象
+         * @return {this}
+         */
+        set(data: TTFObject): this
+    
+        /**
+         * 对字形数据进行优化
+         *
+         * @param  {Object} out  输出结果
+         * @param  {boolean|Object} out.result `true` 或者有问题的地方
+         * @return {this}
+         */
+        optimize(): this
+    
+         /**
+         * 将字体中的复合字形转为简单字形
+         *
+         * @return {this}
+         */
+        compound2simple(): this
+    
+         /**
+         * 对字形按照unicode编码排序
+         *
+         * @return {this}
+         */
+        sort(): this
+    
+         /**
+         * 查找相关字形
+         *
+         * @param  {Object} condition 查询条件
+         * @param  {Array|number} condition.unicode unicode编码列表或者单个unicode编码
+         * @param  {string} condition.name glyf名字，例如`uniE001`, `uniE`
+         * @param  {Function} condition.filter 自定义过滤器
+         * @example
+         *     condition.filter(glyf) {
+         *         return glyf.name === 'logo';
+         *     }
+         * @return {Array}  glyf字形列表
+         */
+        find(condition: FontFindCondition): Glyf[]
+    
+        /**
+         * 合并 font 到当前的 font
+         *
+         * @param {Object} font Font 对象
+         * @param {Object} options 参数选项
+         * @param {boolean} options.scale 是否自动缩放
+         * @param {boolean} options.adjustGlyf 是否调整字形以适应边界
+         *                                     (和 options.scale 参数互斥)
+         *
+         * @return {this}
+         */
+        merge(font: Font, options: FontMergeOptions): this
+    }
+    
+    
+    
+    export class TTF {
+    
+        /**
+         * ttf读取函数
+         *
+         * @constructor
+         * @param {Object} ttf ttf文件结构
+         */
+        constructor(ttfObject: TTFObject)
+    
+        /**
+         * 获取所有的字符信息
+         *
+         * @return {Object} 字符信息
+         */
+        codes(): string[]
+    
+        /**
+         * 根据编码获取字形索引
+         *
+         * @param {string} c 字符或者字符编码
+         *
+         * @return {?number} 返回glyf索引号
+         */
+        getGlyfIndexByCode(c: string | number): number
+    
+        /**
+         * 根据索引获取字形
+         *
+         * @param {number} glyfIndex glyf的索引
+         *
+         * @return {?Object} 返回glyf对象
+         */
+        getGlyfByIndex(glyfIndex: number): Glyf
+    
+        /**
+         * 根据编码获取字形
+         *
+         * @param {string} c 字符或者字符编码
+         *
+         * @return {?Object} 返回glyf对象
+         */
+        getGlyfByCode(c: string | number): Glyf
+    
+        /**
+         * 设置ttf对象
+         *
+         * @param {Object} ttf ttf对象
+         * @return {this}
+         */
+        set(ttfObject: TTFObject): this
+    
+        /**
+         * 获取ttf对象
+         *
+         * @return {ttfObject} ttf ttf对象
+         */
+        get(): TTFObject
+    
+        /**
+         * 添加glyf
+         *
+         * @param {Object} glyf glyf对象
+         *
+         * @return {number} 添加的glyf
+         */
+        addGlyf(glyf: Glyf): Glyf[]
+    
+        /**
+         * 插入glyf
+         *
+         * @param {Object} glyf glyf对象
+         * @param {Object} insertIndex 插入的索引
+         * @return {number} 添加的glyf
+         */
+        insertGlyf(glyf: Glyf, insertIndex: number): Glyf[]
+    
+        /**
+         * 合并两个ttfObject，此处仅合并简单字形
+         *
+         * @param {Object} imported ttfObject
+         * @param {Object} options 参数选项
+         * @param {boolean} options.scale 是否自动缩放
+         * @param {boolean} options.adjustGlyf 是否调整字形以适应边界
+         *                                     (和 options.scale 参数互斥)
+         *
+         * @return {Array} 添加的glyf
+         */
+        mergeGlyf(ttfObject: TTFObject, options: FontMergeOptions): TTFObject
+    
+        /**
+         * 删除指定字形
+         *
+         * @param {Array} indexList 索引列表
+         * @return {Array} 删除的glyf
+         */
+        removeGlyf(indexList: number[]): Glyf[]
+    
+        /**
+         * 设置unicode代码
+         *
+         * @param {string} unicode unicode代码 $E021, $22
+         * @param {Array=} indexList 索引列表
+         * @param {boolean} isGenerateName 是否生成name
+         * @return {Array} 改变的glyf
+         */
+        setUnicode(unicode: string, indexList: number[], isGenerateName: boolean): Glyf[]
+    
+        /**
+         * 生成字形名称
+         *
+         * @param {Array=} indexList 索引列表
+         * @return {Array} 改变的glyf
+         */
+        genGlyfName(indexList: number[]): Glyf[]
+    
+        /**
+         * 清除字形名称
+         *
+         * @param {Array=} indexList 索引列表
+         * @return {Array} 改变的glyf
+         */
+        clearGlyfName(indexList: number[]): Glyf[]
+    
+         /**
+         * 添加并体替换指定的glyf
+         *
+         * @param {Array} glyfList 添加的列表
+         * @param {Array=} indexList 需要替换的索引列表
+         * @return {Array} 改变的glyf
+         */
+        appendGlyf(glyfList: Glyf[], indexList: number[]): Glyf[]
+    
+        /**
+         * 调整glyf位置
+         *
+         * @param {Array=} indexList 索引列表
+         * @param {Object} setting 选项
+         * @param {number=} setting.leftSideBearing 左边距
+         * @param {number=} setting.rightSideBearing 右边距
+         * @param {number=} setting.verticalAlign 垂直对齐
+         * @return {Array} 改变的glyf
+         */
+        adjustGlyfPos(indexList: number[], setting: GlyfPosSettings): Glyf[]
+    
+         /**
+         * 调整glyf
+         *
+         * @param {Array=} indexList 索引列表
+         * @param {Object} setting 选项
+         * @param {boolean=} setting.reverse 字形反转操作
+         * @param {boolean=} setting.mirror 字形镜像操作
+         * @param {number=} setting.scale 字形缩放
+         * @param {boolean=} setting.ajdustToEmBox  是否调整字形到 em 框
+         * @param {number=} setting.ajdustToEmPadding 调整到 em 框的留白
+         * @return {boolean}
+         */
+        adjustGlyf(indexList: number[], setting: GlyfSettings): Glyf[]
+    
+        /**
+         * 获取glyf列表
+         *
+         * @param {Array=} indexList 索引列表
+         * @return {Array} glyflist
+         */
+        getGlyf(indexList: number[],): Glyf[]
+    
+        /**
+         * 查找相关字形
+         *
+         * @param  {Object} condition 查询条件
+         * @param  {Array|number} condition.unicode unicode编码列表或者单个unicode编码
+         * @param  {string} condition.name glyf名字，例如`uniE001`, `uniE`
+         * @param  {Function} condition.filter 自定义过滤器
+         * @example
+         *     condition.filter = function (glyf) {
+         *         return glyf.name === 'logo';
+         *     }
+         * @return {Array}  glyf字形索引列表
+         */
+        findGlyf(condition: FontFindCondition): Glyf[]
+    
+        /**
+         * 更新指定的glyf
+         *
+         * @param {Object} glyf glyfobject
+         * @param {string} index 需要替换的索引列表
+         * @return {Array} 改变的glyf
+         */
+        replaceGlyf(glyf: Glyf, index: number): Glyf[]
+    
+        /**
+         * 设置glyf
+         *
+         * @param {Array} glyfList glyf列表
+         * @return {Array} 设置的glyf列表
+         */
+        setGlyf(glyfList: Glyf[]): Glyf[]
+    
+        /**
+         * 对字形按照unicode编码排序，此处不对复合字形进行排序，如果存在复合字形, 不进行排序
+         *
+         * @param {Array} glyfList glyf列表
+         * @return {Array} 设置的glyf列表
+         */
+        sortGlyf(): Glyf[]
+        
+        /**
+         * 设置名字
+         *
+         * @param {string} name 名字字段
+         * @return {Object} 名字对象
+         */
+        setName(name: TTFObject['name']): TTFObject['name']
+    
+        /**
+         * 设置head信息
+         *
+         * @param {Object} head 头部信息
+         * @return {Object} 头对象
+         */
+        setHead(head: TTFObject['head']): TTFObject['head']
+    
+        /**
+         * 设置hhea信息
+         *
+         * @param {Object} fields 字段值
+         * @return {Object} 头对象
+         */
+        setHhea(hhea: TTFObject['hhea']): TTFObject['hhea']
+    
+        /**
+         * 设置OS2信息
+         *
+         * @param {Object} fields 字段值
+         * @return {Object} 头对象
+         */
+        setOS2(os2: TTFObject['OS/2']): TTFObject['OS/2']
+    
+        /**
+         * 设置post信息
+         *
+         * @param {Object} fields 字段值
+         * @return {Object} 头对象
+         */
+        setPost(os2: TTFObject['post']): TTFObject['post']
+    
+        /**
+         * 计算度量信息
+         *
+         * @return {Object} 度量信息
+         */
+        calcMetrics(): FontMetrics
+    
+        /**
+         * 优化ttf字形信息
+         *
+         * @return {Array} 改变的glyf
+         */
+        optimize(): Glyf[]
+    
+        /**
+         * 复合字形转简单字形
+         *
+         * @param {Array=} indexList 索引列表
+         * @return {Array} 改变的glyf
+         */
+        compound2simple(indexList?: number[]): Glyf[]
+    }
+    
+    export class TTFReader {
     /**
-     * core exports
-     */
-    const core: Core;
+         * ttf读取器的构造函数
+         *
+         * @param {Object} options 写入参数
+         * @param {boolean} options.hinting 保留hinting信息
+         * @param {boolean} options.compound2simple 复合字形转简单字形
+         * @constructor
+         */
+        constructor(options: FontReadOptions)
+    
+        /**
+         * 初始化读取
+         *
+         * @param {ArrayBuffer} buffer buffer对象
+         * @return {Object} ttf对象
+         */
+        readBuffer(buffer: ArrayBuffer | Buffer | string): TTFObject
+    
+        /**
+         * 关联glyf相关的信息
+         *
+         * @param {Object} ttf ttf对象
+         */
+        resolveGlyf(ttfObject: TTFObject): void
+        
+        /**
+         * 清除非必须的表
+         *
+         * @param {Object} ttf ttf对象
+         */
+        cleanTables(ttfObject: TTFObject): void
+        
+        /**
+         * 获取解析后的ttf文档
+         *
+         * @param {ArrayBuffer} buffer buffer对象
+         * @return {Object} ttf文档
+         */
+        read(buffer: ArrayBuffer | Buffer | string): TTFObject
+        
+        /**
+         * 注销
+         */
+        dispose(): void
+    }
+    
+    export class TTFWriter {
+        constructor(options: FontWriteOptions)
+    
+        /**
+         * 处理ttf结构，以便于写
+         *
+         * @param {ttfObject} ttf ttf数据结构
+         */
+        resolveTTF(ttfObject: TTFObject): void
+        
+        /**
+         * 写ttf文件
+         *
+         * @param {ttfObject} ttf ttf数据结构
+         * @return {ArrayBuffer} 字节流
+         */
+        dump(ttfObject: TTFObject): ArrayBuffer | Buffer
+        
+         /**
+         * 对ttf的表进行评估，标记需要处理的表
+         *
+         * @param  {Object} ttf ttf对象
+         */
+        prepareDump(ttfObject: TTFObject): void
+        
+        /**
+         * 写一个ttf字体结构
+         *
+         * @param {Object} ttf ttf数据结构
+         * @return {ArrayBuffer} 缓冲数组
+         */
+        write(ttfObject: TTFObject): ArrayBuffer | Buffer
+        
+        /**
+         * 注销
+         */
+        dispose(): void
+    }
+    
+    
+    /** woff2 use wasm build of google woff2, before read and write woff2, you should first call woff2.init(). */
+    export namespace woff2 {
+        export function init(): Promise<void>
+    }
 }
-
-export const Font: typeof FontEditor.Font;
-export const woff2: FontEditor.Woff2;
-export default FontEditor.core;
